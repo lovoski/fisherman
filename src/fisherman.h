@@ -57,10 +57,8 @@ struct _args {
 typedef void *(*interface_func)(void *);
 void *test_connect(void *args);
 void *login(void *args);
-void *public_chat(void *args);
-void *private_chat(void *args);
+void *broadcast(void *args);
 void *file_upload(void *args);
-void *broadcast_message(void *args);
 /**
  * @param args a _args pointer
  * @brief listen to msg from clients and append tasks to request_handler
