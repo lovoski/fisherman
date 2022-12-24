@@ -10,7 +10,7 @@ server of an online chatting room
 
 ## dependencies
 
-- libmysqlclient
+- libmysqlclient:
   ```bash
   sudo apt install libmysqlclient-dev
   ```

@@ -68,13 +68,6 @@ void *broadcast_message(void *args);
 void *client_listening(void *args);
 
 class fisherman {
-  // this should be improved
-  friend void *client_listening(void *args);
-  friend void *login(void *args);
-  friend void *public_chat(void *args);
-  friend void *private_chat(void *args);
-  friend void *file_upload(void *args);
-  friend void *broadcast_message(void *args);
 public:
   fisherman(
     const char *host, 
@@ -82,7 +75,7 @@ public:
     const int max_requests);
   ~fisherman();
   void start(const int max_listeners);
-private:
+
   int server_sockfd;
   std::map<int, user> user_map;
   std::map<int, conversation> conv_map;
