@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <map>
 #include <vector>
+#include <fstream>
 #include <string>
 #include "sql.h"
 #include "threadpool.h"
@@ -36,6 +37,8 @@ struct user {
   // true when login approved
   // set to false when quit
   bool approved_online;
+  // conversation list of each user
+  std::vector<int> conv_list;
 };
 struct file {
   int fid;
@@ -48,19 +51,14 @@ struct file {
 struct conversation {
   int cid;
   pthread_mutex_t mtx;
-  pthread_cond_t cond;
   std::vector<int> members;
   std::vector<int> files;
-  std::queue<message> messages;
+  std::fstream history;
+  const char *historypath;
   conversation() {
-    pthread_cond_init(&cond, NULL);
     pthread_mutex_init(&mtx, NULL);
   }
   ~conversation() {
-    pthread_mutex_lock(&mtx);
-    while (!messages.empty())
-      messages.pop();
-    pthread_mutex_unlock(&mtx);
     pthread_mutex_destroy(&mtx);
   }
 };
@@ -109,6 +107,7 @@ public:
   void start(const int max_listeners = 10);
 
   int server_sockfd;
+  bool keep_serving = true;
   std::vector<user> user_map;
   std::vector<file> file_map;
   std::map<std::string, int> username_map;
