@@ -30,8 +30,12 @@ void fisherman::start(const int max_listeners = 10) {
   // build interface map
   interface_map[0] = test_connect;
   interface_map[1] = login;
-  interface_map[2] = broadcast;
-  interface_map[3] = file_upload;
+  interface_map[2] = quit;
+  interface_map[3] = broadcast;
+  interface_map[4] = file_upload;
+  interface_map[5] = file_list;
+  interface_map[6] = file_download;
+  interface_map[7] = conversation_list;
   // build user map
   user_map.insert({0, {0, "a", "123"}});
   user_map.insert({1, {1, "b", "123"}});
@@ -66,5 +70,9 @@ void *client_listening(void *args) {
 };
 void *test_connect(void *args) {return NULL;}
 void *login(void *args) {return NULL;}
+void *quit(void *args) {return NULL;}
 void *broadcast(void *args) {return NULL;}
 void *file_upload(void *args) {return NULL;}
+void *file_list(void *args) {return NULL;}
+void *file_download(void *args) {return NULL;}
+void *conversation_list(void *args) {return NULL;}
