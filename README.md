@@ -1,6 +1,6 @@
 # Introduction
 
-server of an online chatting room
+server of an online chatting room based on udp
 
 ## environment
 
@@ -19,34 +19,62 @@ server of an online chatting room
 
 - test_connect
   ```
-
+  msg -> {4(uid), 4(inno), 1016(...)}
+  ret -> {4(uid), 4(inno), 1016("server online")}
   ```
 - login
   ```
-
+  msg -> {4(uid), 4(inno), 1016(200(username), ...(password))}
+  ret -> {4(uid), 4(inno), 1016(4(status_code), ...)}
   ```
 - quit
   ```
-
+  msg -> {4(uid), 4(inno), 1016(...)}
   ```
 - broadcast
   ```
-
+  msg -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), ...(message))}
+  ret -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), ...("message sent"))}
   ```
 - file_upload
   ```
-  1: msg -> {4(uid), 4(inno), 1016(4(cid), 8(segementnum), ...(filename))}
+  1: msg -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), 8(segementnum), ...(filename))}
   2: msg -> {4(uid), 4(inno), 1016(4(cid), ...(file))} * segementnum
+  ret -> {4(uid), 4(inno), 1016(4(cid), 8(segementnum), ...(filename))}
   ```
 - file_list
   ```
-
+  msg -> {4(uid), 4(inno), 1016(4(cid), ...)}
+  ret -> {4(uid), 4(inno), 1016(4(cid), 4(fid), 4(timestamp), ...(filename))} * filenum
+  ```
+- delete_file
+  ```
+  msg -> {4(uid), 4(inno), 1016(4(cid), 4(fid), ...)}
+  ret -> {4(uid), 4(inno), 1016(4(status_code))}
   ```
 - file_download
   ```
-
+  msg -> {4(uid), 4(inno), 1016(4(cid), 4(fid), ...)}
+  1: ret -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), 8(segementnum), ...(filename))}
+  2: ret -> {4(uid), 4(inno), 1016(4(cid), ...(file))} * segementnum
   ```
 - conversation_list
   ```
-
+  msg -> {4(uid), 4(inno), 1016(4(cid), ...)}
+  1: ret -> {4(uid), 4(inno), 1016(8(conversationnum), ...)}
+  2: ret -> {4(uid), 4(inno), 1016(4(cid), ...(conversationname))} * conversationnum
+  ```
+- create_conversation
+  ```
+  msg -> {4(uid), 4(inno), 1016(8(membernum), 4(temporatyid) ...(conversationname))}
+  ret -> {4(uid), 4(inno), 1016(4(cid), ...)}
+  msg -> {4(uid), 4(inno), 1016(4(cid), 4(uid_member) * ...)} * ...
+  ret -> {4(uid), 4(inno), 1016(4(status_code), ...)}
+  ```
+- modify_conversation
+  ```
+  msg -> {4(uid), 4(inno), 1016(4(cid), 4(modoption), 8(modmembernum), ...(conversationname))}
+  ret -> {4(uid), 4(inno), 1016(4(cid), ...)}
+  msg -> {4(uid), 4(inno), 1016(4(uid_member) * ...)} * ...
+  ret -> {4(uid), 4(inno), 1016(4(status_code), ...)}
   ```

@@ -1,9 +1,9 @@
 #include "fisherman.h"
 
 fisherman::fisherman(
-  const char *host = "127.0.0.1",
-  const int port = 9958,
-  const int max_requests = 200
+  const char *host,
+  const int port,
+  const int max_requests
   ) {
   requests_handler = new threadpool(max_requests);
 
@@ -25,7 +25,7 @@ fisherman::~fisherman() {
   delete client_listeners;
   delete requests_handler;
 }
-void fisherman::start(const int max_listeners = 10) {
+void fisherman::start(const int max_listeners) {
   client_listeners = new threadpool(max_listeners);
   // build interface map
   interface_map.resize(50);
@@ -35,12 +35,20 @@ void fisherman::start(const int max_listeners = 10) {
   interface_map[3] = broadcast;
   interface_map[4] = file_upload;
   interface_map[5] = file_list;
-  interface_map[6] = file_download;
-  interface_map[7] = conversation_list;
-  // build user map
-  user_map.push_back({0, "a", "123"});
-  user_map.push_back({1, "b", "123"});
-  user_map.push_back({2, "c", "123"});
+  interface_map[6] = delete_file;
+  interface_map[7] = file_download;
+  interface_map[8] = conversation_list;
+  interface_map[9] = create_conversation;
+  interface_map[10] = modify_conversation;
+  // build user map and username map
+  user_map.push_back({0, "a", "123", true});
+  user_map.push_back({1, "b", "123", true});
+  user_map.push_back({2, "c", "123", true});
+  username_map.insert({"a", 0});
+  username_map.insert({"b", 1});
+  username_map.insert({"c", 2});
+  // build file map
+  // ...
   // build conversation map
   conversation default_lobby;
   default_lobby.cid = 0;
@@ -75,5 +83,8 @@ void *quit(void *args) {return NULL;}
 void *broadcast(void *args) {return NULL;}
 void *file_upload(void *args) {return NULL;}
 void *file_list(void *args) {return NULL;}
+void *delete_file(void *args) {return NULL;}
 void *file_download(void *args) {return NULL;}
 void *conversation_list(void *args) {return NULL;}
+void *create_conversation(void *args) {return NULL;}
+void *modify_conversation(void *args) {return NULL;}
