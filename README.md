@@ -38,8 +38,9 @@ server of an online chatting room based on udp
   ```
 - file_upload
   ```
-  1: msg -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), 8(segementnum), ...(filename))}
-  2: msg -> {4(uid), 4(inno), 1016(4(cid), ...(file))} * segementnum
+  msg -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), 8(segementnum), ...(filename))}
+  ret -> {4(uid), 4(inno), 1016(4(cid), ...)}
+  msg -> {4(uid), 4(inno), 1016(4(cid), ...(file))} * segementnum
   ret -> {4(uid), 4(inno), 1016(4(cid), 8(segementnum), ...(filename))}
   ```
 - file_list
@@ -55,14 +56,14 @@ server of an online chatting room based on udp
 - file_download
   ```
   msg -> {4(uid), 4(inno), 1016(4(cid), 4(fid), ...)}
-  1: ret -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), 8(segementnum), ...(filename))}
-  2: ret -> {4(uid), 4(inno), 1016(4(cid), ...(file))} * segementnum
+  ret -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), 8(segementnum), ...(filename))}
+  ret -> {4(uid), 4(inno), 1016(4(cid), ...(file))} * segementnum
   ```
 - conversation_list
   ```
   msg -> {4(uid), 4(inno), 1016(4(cid), ...)}
-  1: ret -> {4(uid), 4(inno), 1016(8(conversationnum), ...)}
-  2: ret -> {4(uid), 4(inno), 1016(4(cid), ...(conversationname))} * conversationnum
+  ret -> {4(uid), 4(inno), 1016(8(conversationnum), ...)}
+  ret -> {4(uid), 4(inno), 1016(4(cid), ...(conversationname))} * conversationnum
   ```
 - create_conversation
   ```
