@@ -28,6 +28,7 @@ fisherman::~fisherman() {
 void fisherman::start(const int max_listeners = 10) {
   client_listeners = new threadpool(max_listeners);
   // build interface map
+  interface_map.resize(50);
   interface_map[0] = test_connect;
   interface_map[1] = login;
   interface_map[2] = quit;
@@ -37,16 +38,16 @@ void fisherman::start(const int max_listeners = 10) {
   interface_map[6] = file_download;
   interface_map[7] = conversation_list;
   // build user map
-  user_map.insert({0, {0, "a", "123"}});
-  user_map.insert({1, {1, "b", "123"}});
-  user_map.insert({2, {2, "c", "123"}});
+  user_map.push_back({0, "a", "123"});
+  user_map.push_back({1, "b", "123"});
+  user_map.push_back({2, "c", "123"});
   // build conversation map
   conversation default_lobby;
   default_lobby.cid = 0;
   default_lobby.members.resize(3);
-  default_lobby.members.emplace_back(0);
-  default_lobby.members.emplace_back(1);
-  default_lobby.members.emplace_back(2);
+  default_lobby.members.push_back(0);
+  default_lobby.members.push_back(1);
+  default_lobby.members.push_back(2);
   // start client_listening
   _args args;
   args.server = this;

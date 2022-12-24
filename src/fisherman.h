@@ -9,7 +9,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
-#include <map>
+#include <vector>
 #include "sql.h"
 #include "threadpool.h"
 
@@ -79,9 +79,9 @@ public:
   void start(const int max_listeners);
 
   int server_sockfd;
-  std::map<int, user> user_map;
-  std::map<int, conversation> conv_map;
-  std::map<int, interface_func> interface_map;
+  std::vector<user> user_map;
+  std::vector<conversation> conv_map;
+  std::vector<interface_func> interface_map;
   threadpool *client_listeners;
   threadpool *requests_handler;
 };
