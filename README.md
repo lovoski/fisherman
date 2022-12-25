@@ -8,6 +8,12 @@ server of an online chatting room based on udp
 - g++ 11.3.0
 - libmysqlclient-dev 8.0.31
 
+## compile
+
+```bash
+cd src && make
+```
+
 ## dependencies
 
 - libmysqlclient:
