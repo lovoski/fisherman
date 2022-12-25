@@ -5,7 +5,7 @@ array<T>::array(const int size) {
   m_size = size;
   m_limit = 2 * size;
   m_cur_index = 0;
-  m_data = new T[size*2];
+  m_data = (T *)malloc(m_limit * sizeof(T));
 }
 template<typename T>
 array<T>::~array() {
@@ -31,9 +31,30 @@ template<typename T>
 T &array<T>::operator[](const int index) {
   return m_data[index];
 }
-
-int argv2int(char *argv, int len) {
+void int32_to_argv(__int32_t num, char *ret) {
+  int n = 0xff000000;
+  for (int i = 0; i < 4; ++i) {
+    ret[i] = (num & n) >> (24-8*i);
+    n >>= 8;
+  }
+}
+void int64_to_argv(__int64_t num, char *ret) {
+  __int64_t n = 0xff00000000000000;
+  for (int i = 0; i < 8; ++i) {
+    ret[i] = (num & n) >> (56-8*i);
+    n >>= 8;
+  }
+}
+__int32_t argv_to_int32(char *argv, int len) {
   int ret = 0, n = 1;
+  for (int i = len-1; i >= 0; --i) {
+    ret += argv[i] * n;
+    n <<= 8;
+  }
+  return ret;
+}
+__int64_t argv_to_int64(char *argv, int len) {
+  __int64_t ret = 0, n = 1;
   for (int i = len-1; i >= 0; --i) {
     ret += argv[i] * n;
     n <<= 8;
@@ -133,13 +154,14 @@ void *client_listening(void *args) {
   while (true) {
     message msg;
     memset(&msg, 0, message_max_len);
-    printf("[pending receiving message]\n");
-    if (recvfrom(param->server_sockfd, &msg, message_max_len, 0, (struct sockaddr *)&client_sockaddr, &addrlen) == -1) {
+    printf("[wait for msg]\n");
+    if (recvfrom(param->server_sockfd, &msg, message_max_len, 0, 
+    (struct sockaddr *)&client_sockaddr, &addrlen) == -1) {
       printf("[error] recvfrom error\n");
     }
     _args inargs = {msg, param, client_sockaddr};
-    printf("[receive request] interface number:%d\n", argv2int(msg.inno, 4));
-    param->requests_handler->append_task({param->interface_map[argv2int(msg.inno, 4)], &inargs});
+    printf("[receive request] interface number:%d\n", argv_to_int32(msg.inno, 4));
+    param->requests_handler->append_task({param->interface_map[argv_to_int32(msg.inno, 4)], &inargs});
   }
 }
 
@@ -176,6 +198,7 @@ void *login(void *args) {
         goto __reject;
       sv->user_map[uid].approved_online = true;
       printf("[user login] username:%s\n", (ls->msg.content+200));
+      // notify other users
       status_code == 0;
     } else {
       __reject:
@@ -198,13 +221,17 @@ void *login(void *args) {
 }
 
 void *quit(void *args) {
+  _args *q = (_args *)args;
+  int uid = argv_to_int32(q->msg.uid, 4);
+  q->server->user_map[uid].approved_online = false;
+  printf("[user quit] username:%s\n", (q->msg.content+200));
   return NULL;
 }
 
 void *broadcast(void *args) {
   _args *bc = (_args *)args;
-  int sender_uid = atoi(bc->msg.uid);
-  conversation *conv = &bc->server->conv_map[argv2int(bc->msg.content, 4)];
+  int sender_uid = argv_to_int32(bc->msg.uid, 4);
+  conversation *conv = &bc->server->conv_map[argv_to_int32(bc->msg.content, 4)];
   pthread_mutex_lock(&conv->mtx);
   for (auto i : conv->members) {
     if (i == sender_uid) {

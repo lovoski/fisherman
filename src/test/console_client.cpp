@@ -8,8 +8,30 @@
 #include <unistd.h>
 #include <signal.h>
 
-int argv2int(char *argv, int len) {
+void int32_to_argv(__int32_t num, char *ret) {
+  int n = 0xff000000;
+  for (int i = 0; i < 4; ++i) {
+    ret[i] = (num & n) >> (24-8*i);
+    n >>= 8;
+  }
+}
+void int64_to_argv(__int64_t num, char *ret) {
+  __int64_t n = 0xff00000000000000;
+  for (int i = 0; i < 8; ++i) {
+    ret[i] = (num & n) >> (56-8*i);
+    n >>= 8;
+  }
+}
+__int32_t argv_to_int32(char *argv, int len) {
   int ret = 0, n = 1;
+  for (int i = len-1; i >= 0; --i) {
+    ret += argv[i] * n;
+    n <<= 8;
+  }
+  return ret;
+}
+__int64_t argv_to_int64(char *argv, int len) {
+  __int64_t ret = 0, n = 1;
   for (int i = len-1; i >= 0; --i) {
     ret += argv[i] * n;
     n <<= 8;
@@ -55,10 +77,10 @@ int main() {
       message ret;
       __start:
       recvfrom(sockfd, &ret, max_msg_len, 0, NULL, NULL);
-      if (argv2int(ret.inno, 4) != 1)
+      if (argv_to_int32(ret.inno, 4) != 1)
         goto __start;
       else {
-        printf("[login] status_code=%d\n", argv2int(ret.content, 4));
+        printf("[login] status_code=%d\n", argv_to_int32(ret.content, 4));
         break;
       }
     }
