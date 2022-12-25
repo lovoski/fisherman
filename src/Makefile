@@ -10,8 +10,8 @@ target : $(obj)
 
 main.o : main.cpp
 sql.o : sql.cpp
-fisherman.o : fisherman.cpp
 threadpool.o : threadpool.cpp
+fisherman.o : fisherman.cpp
 
 clean :
 	rm -rf *.o $(exe)

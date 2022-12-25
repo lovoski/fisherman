@@ -1,5 +1,12 @@
 #include "fisherman.h"
-#include "charutils.h"
+
+inline int atoi_assigned_len(
+  const char *str, 
+  const int len) {
+  char *t_str = (char *)str;
+  t_str[len] = 0;
+  return atoi(t_str);
+}
 
 fisherman::fisherman(
   const char *host,
@@ -42,9 +49,10 @@ void fisherman::start(const int max_listeners) {
   interface_map[9] = create_conversation;
   interface_map[10] = modify_conversation;
   // build user map and username map
-  user_map.push_back({0, "a", "123", true});
-  user_map.push_back({1, "b", "123", true});
-  user_map.push_back({2, "c", "123", true});
+  user_map = new user[50];
+  user_map[0] = {0, "a", "123", true};
+  user_map[1] = {1, "b", "123", true};
+  user_map[2] = {2, "c", "123", true};
   username_map.insert({"a", 0});
   username_map.insert({"b", 1});
   username_map.insert({"c", 2});
@@ -52,9 +60,9 @@ void fisherman::start(const int max_listeners) {
   // ...
   // build conversation map
   // load history of each conversation, set up the file stream
-  conv_map.resize(200);
+  conversation lobby;
+  conv_map = new conversation[200];
   conv_map[0].cid = 0;
-  conv_map[0].members.resize(3);
   conv_map[0].members.push_back(0);
   conv_map[0].members.push_back(1);
   conv_map[0].members.push_back(2);
@@ -73,11 +81,13 @@ void *client_listening(void *args) {
   socklen_t addrlen = sizeof(client_sockaddr);
   message msg;
   while (true) {
+    printf("[pending receiving message]\n");
     if (recvfrom(param->server_sockfd, &msg, message_max_len, 0, (struct sockaddr *)&client_sockaddr, &addrlen) == -1) {
       perror("recvfrom error\n");
       exit(1);
     }
     _args inargs = {msg, param};
+    printf("[receive request] interface number:%s\n", msg.inno);
     param->requests_handler->append_task({param->interface_map[atoi(msg.inno)], &inargs});
   }
 }
@@ -98,6 +108,34 @@ void *test_connect(void *args) {
 }
 
 void *login(void *args) {
+  _args *ls = (_args *)args;
+  message tmp_msg;
+  const char *reply = "server online";
+  memcpy(tmp_msg.uid, ls->msg.uid, sizeof(ls->msg.uid));
+  memcpy(tmp_msg.inno, ls->msg.inno, sizeof(ls->msg.inno));
+  fisherman *sv = ls->server;
+  int status_code;
+  if (sv->username_map.find(std::string(ls->msg.content)) != sv->username_map.end()) {
+    if (sv->user_map[sv->username_map[ls->msg.content]].password == (ls->msg.content+200)) {
+      // approved login, update user state
+      printf("[user login] username:%s\n", (ls->msg.content+200));
+      status_code == 0;
+    } else {
+      // reject login
+      printf("[rejcect user login] username:%s\n", (ls->msg.content+200));
+      status_code = 1;
+    }
+  } else {
+    // create account for user
+    printf("[register new user] username:%s\n", (ls->msg.content+200));
+    status_code = 2;
+  }
+  memcpy(tmp_msg.content, &status_code, sizeof(status_code));
+  if (sendto(ls->server->server_sockfd, tmp_msg.uid, message_max_len, 0, 
+  (struct sockaddr *)&ls->server->user_map[atoi(ls->msg.uid)].addr, sizeof(sockaddr_in)) == -1) {
+    perror("sendto error\n");
+    exit(1);
+  }
   return NULL;
 }
 

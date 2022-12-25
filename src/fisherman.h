@@ -50,11 +50,11 @@ struct file {
 };
 struct conversation {
   int cid;
-  pthread_mutex_t mtx;
   std::vector<int> members;
   std::vector<int> files;
-  std::fstream history;
   const char *historypath;
+  pthread_mutex_t mtx;
+  std::fstream history;
   conversation() {
     pthread_mutex_init(&mtx, NULL);
   }
@@ -73,6 +73,12 @@ struct _args {
 
 typedef void *(*interface_func)(void *);
 void *test_connect(void *args);
+/**
+ * status_code:
+ * 0 -> {account exists, password correct}
+ * 1 -> {account exists, wrong password}
+ * 2 -> {account don't exist, new account created}
+*/
 void *login(void *args);
 void *quit(void *args);
 void *broadcast(void *args);
@@ -108,10 +114,10 @@ public:
 
   int server_sockfd;
   bool keep_serving = true;
-  std::vector<user> user_map;
-  std::vector<file> file_map;
+  user *user_map;
+  file *file_map;
+  conversation *conv_map;
   std::map<std::string, int> username_map;
-  std::vector<conversation> conv_map;
   std::vector<interface_func> interface_map;
   threadpool *client_listeners;
   threadpool *requests_handler;
