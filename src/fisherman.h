@@ -15,6 +15,7 @@
 #include <string>
 #include "sql.h"
 #include "threadpool.h"
+#include<iostream>
 
 class fisherman;
 // 1024 bytes
@@ -33,6 +34,7 @@ struct user {
   // 1 -> admin
   // 2 -> peasant
   int privillege;
+  sockaddr addr;
   // true when login approved
   // set to false when quit
   bool approved_online;
@@ -64,13 +66,12 @@ struct conversation {
 struct _args {
   message msg;
   fisherman *server;
-  sockaddr_in client_addr;
   void reset(_args *args) {
     msg = args->msg;
     server = args->server;
-    client_addr = args->client_addr;
   }
 };
+int substr_int(char *c,int l,int r);
 
 typedef void *(*interface_func)(void *);
 void *test_connect(void *args);
@@ -104,19 +105,6 @@ void *modify_conversation(void *args);
 */
 void *client_listening(void *args);
 
-template<typename T>
-class array {
-public:
-  array(const int size = 50);
-  ~array();
-  void resize(const int nsize);
-  void insert(const T &ele);
-  T &operator[](const int index);
-private:
-  int m_size, m_limit, m_cur_index;
-  T *m_data;
-};
-
 class fisherman {
 public:
   fisherman(
@@ -128,9 +116,9 @@ public:
 
   int server_sockfd;
   bool keep_serving = true;
-  array<user> user_map;
-  array<file> file_map;
-  array<conversation> conv_map;
+  user *user_map;
+  file *file_map;
+  conversation *conv_map;
   std::map<std::string, int> username_map;
   std::vector<interface_func> interface_map;
   threadpool *client_listeners;
