@@ -168,7 +168,6 @@ void *client_listening(void *args) {
 void *test_connect(void *args) {//0000
   setbuf(stdout,NULL);
   _args *tc = (_args *)args;
-  //printf("1\n\n");
   message tmp_msg;
   const char *reply = "server online";
   memcpy(tmp_msg.uid, tc->msg.uid, sizeof(tc->msg.uid));
@@ -189,18 +188,15 @@ void *login(void *args) {//0001
   fisherman *sv = ls->server;
   int status_code;
   const char *reply = "server online";
-  //memcpy(tmp_msg.uid, ls->msg.uid, sizeof(ls->msg.uid));
-  int32_to_argv(sv->username_map[ls->msg.content+200],tmp_msg.uid);
+  int32_to_argv(sv->username_map[ls->msg.content+200], tmp_msg.uid);
   memcpy(tmp_msg.inno, ls->msg.inno, sizeof(ls->msg.inno));
   if (sv->username_map.find(std::string(ls->msg.content+200)) != sv->username_map.end()) {
     int uid = sv->username_map[ls->msg.content+200];//改动
-    //printf("%d",uid);
     // debug_mem(sv->user_map[uid].password, 10, "server:");
     // debug_mem(ls->msg.content, 10, "client:");
     if (mstrcmp(sv->user_map[uid].password, ls->msg.content)) {
       // approved login, update user state
       // reject duplicate login
-      //printf("%d\n",uid);
       if (sv->user_map[uid].approved_online)
         goto __reject;
       sv->user_map[uid].approved_online = true;
@@ -274,14 +270,7 @@ void *file_download(void *args) {return NULL;}
 void *conversation_list(void *args) {return NULL;}
 
 void *create_conversation(void *args){
-  /*
-  msg -> {4(uid), 4(inno), 1016(8(membernum), 4(temporatyid) ...(conversationname))}
-  ret -> {4(uid), 4(inno), 1016(4(cid), ...)}
-  msg -> {4(uid), 4(inno), 1016(4(cid), 4(uid_member) * ...)} * ...
-  ret -> {4(uid), 4(inno), 1016(4(status_code), ...)}
-  */
-
-    return NULL;
-  }
+  return NULL;
+}
 
 void *modify_conversation(void *args) {return NULL;}
