@@ -236,7 +236,7 @@ void *broadcast(void *args) {//0003
   _args *bc = (_args *)args;
   int sender_uid = argv_to_int32(bc->msg.uid, 4);
   conversation *conv = &bc->server->conv_map[0];//argv_to_int32(bc->msg.content, 4)];
-  //pthread_mutex_lock(&conv->mtx);
+  pthread_mutex_lock(&conv->mtx);
   for (auto i : conv->members) {
     if (i == sender_uid) {
       message tmp_msg;
@@ -255,7 +255,7 @@ void *broadcast(void *args) {//0003
       }
     }
   }
-  //pthread_mutex_unlock(&conv->mtx);
+  pthread_mutex_unlock(&conv->mtx);
   return NULL;
 }
 
