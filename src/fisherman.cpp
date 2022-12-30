@@ -122,9 +122,9 @@ void fisherman::start(const int max_listeners) {
   interface_map[9] = create_conversation;
   interface_map[10] = modify_conversation;
   // build user map and username map
-  user_map[0] = {0, "a", "123", true};
-  user_map[1] = {1, "b", "123", true};
-  user_map[2] = {2, "c", "123", true};
+  user_map[0] = {0, "a", "123", false};
+  user_map[1] = {1, "b", "123", false};
+  user_map[2] = {2, "c", "123", false};
   username_map.insert({"a", 0});
   username_map.insert({"b", 1});
   username_map.insert({"c", 2});
@@ -148,17 +148,17 @@ void fisherman::start(const int max_listeners) {
 }
 void *client_listening(void *args) {
   fisherman *param = ((_args *)args)->server;
-  struct sockaddr_in client_sockaddr;
-  socklen_t addrlen = sizeof(client_sockaddr);
+  struct sockaddr_in client_addr;
+  socklen_t addrlen = sizeof(client_addr);
   while (true) {
     message msg;
     memset(&msg, 0, message_max_len);
     printf("[wait for msg]\n");
     if (recvfrom(param->server_sockfd, &msg, message_max_len, 0, 
-    (struct sockaddr *)&client_sockaddr, &addrlen) == -1) {
+    (struct sockaddr *)&client_addr, &addrlen) == -1) {
       printf("[error] recvfrom error\n");
     }
-    _args inargs = {msg, param, client_sockaddr};
+    _args inargs = {msg, param, client_addr};
     printf("[receive request] interface number:%d\n", argv_to_int32(msg.inno, 4));
     //printf("[receive request] user number:%d\n", argv_to_int32(msg.uid, 4));
     param->requests_handler->append_task({param->interface_map[argv_to_int32(msg.inno, 4)], &inargs});
@@ -172,7 +172,7 @@ void *test_connect(void *args) {//0000
   const char *reply = "server online";
   memcpy(tmp_msg.uid, tc->msg.uid, sizeof(tc->msg.uid));
   memcpy(tmp_msg.inno, tc->msg.inno, sizeof(tc->msg.inno));
-  memcpy(tmp_msg.content, reply, sizeof(reply));
+  memcpy(tmp_msg.content, reply, strlen(reply));
   if (sendto(tc->server->server_sockfd, &tmp_msg, message_max_len, 0, 
   (struct sockaddr *)&tc->client_addr, sizeof(sockaddr_in)) == -1) {
     printf("[error] sendto error\n");
@@ -200,7 +200,7 @@ void *login(void *args) {//0001
       if (sv->user_map[uid].approved_online)
         goto __reject;
       sv->user_map[uid].approved_online = true;
-      sv->user_map[uid].client_sockaddr = ls->client_addr;
+      sv->user_map[uid].client_addr = ls->client_addr;
       printf("[user login] username:%s\n", (ls->msg.content+200));
       // notify other users
       status_code == 0;
@@ -232,30 +232,30 @@ void *quit(void *args) {
   return NULL;
 }
 
-void *broadcast(void *args) {
+void *broadcast(void *args) {//0003
   _args *bc = (_args *)args;
   int sender_uid = argv_to_int32(bc->msg.uid, 4);
-  conversation *conv = &bc->server->conv_map[argv_to_int32(bc->msg.content, 4)];
-  pthread_mutex_lock(&conv->mtx);
+  conversation *conv = &bc->server->conv_map[0];//argv_to_int32(bc->msg.content, 4)];
+  //pthread_mutex_lock(&conv->mtx);
   for (auto i : conv->members) {
     if (i == sender_uid) {
       message tmp_msg;
       const char *reply = "message sent";
       memcpy(tmp_msg.uid, bc->msg.uid, sizeof(bc->msg.uid));
       memcpy(tmp_msg.inno, bc->msg.inno, sizeof(bc->msg.inno));
-      memcpy(tmp_msg.content, reply, sizeof(reply));
-      if (sendto(bc->server->server_sockfd, tmp_msg.uid, message_max_len, 0, 
-      (struct sockaddr *)&bc->client_addr, sizeof(sockaddr_in)) == -1) {
+      memcpy(tmp_msg.content, reply, strlen(reply));
+      if (sendto(bc->server->server_sockfd, &tmp_msg, message_max_len, 0, 
+      (struct sockaddr *)&bc->server->user_map[i].client_addr, sizeof(sockaddr_in)) == -1) {
         printf("[error] sendto error\n");
       }
     } else {
-      if (sendto(bc->server->server_sockfd, bc->msg.uid, message_max_len, 0, 
-      (struct sockaddr *)&bc->client_addr, sizeof(sockaddr_in)) == -1) {
+      if (sendto(bc->server->server_sockfd, &bc->msg, message_max_len, 0, 
+      (struct sockaddr *)&bc->server->user_map[i].client_addr, sizeof(sockaddr_in)) == -1) {
         printf("[error] sendto error\n");
       }
     }
   }
-  pthread_mutex_unlock(&conv->mtx);
+  //pthread_mutex_unlock(&conv->mtx);
   return NULL;
 }
 

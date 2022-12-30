@@ -38,7 +38,7 @@ struct user {
   int privillege;
   // conversation list of each user
   std::vector<int> conv_list;
-  sockaddr_in client_sockaddr;
+  sockaddr_in client_addr;
 };
 struct file {
   int fid;
