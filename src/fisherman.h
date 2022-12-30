@@ -29,15 +29,16 @@ struct user {
   int uid;
   char *username;
   char *password;
-  // 0 -> root
-  // 1 -> admin
-  // 2 -> peasant
-  int privillege;
   // true when login approved
   // set to false when quit
   bool approved_online;
+  // 0 -> root
+  // 1 -> admin
+  // 2 -> visitor
+  int privillege;
   // conversation list of each user
   std::vector<int> conv_list;
+  sockaddr_in client_sockaddr;
 };
 struct file {
   int fid;
@@ -136,5 +137,4 @@ public:
   threadpool *client_listeners;
   threadpool *requests_handler;
 };
-
 #endif

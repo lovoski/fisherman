@@ -73,15 +73,13 @@ cd src && make
   ```
 - create_conversation
   ```
-  msg -> {4(uid), 4(inno), 1016(8(membernum), 4(temporatyid) ...(conversationname))}
+  msg -> {4(uid), 4(inno), 1016(8(membernum), ...(conversationname))}
   ret -> {4(uid), 4(inno), 1016(4(cid), ...)}
-  msg -> {4(uid), 4(inno), 1016(4(cid), 4(uid_member) * ...)} * ...
-  ret -> {4(uid), 4(inno), 1016(4(status_code), ...)}
   ```
 - modify_conversation
   ```
-  msg -> {4(uid), 4(inno), 1016(4(cid), 4(modoption), 8(modmembernum), ...(conversationname))}
+  msg -> {4(uid), 4(inno), 1016(4(cid), 1(modoption), 8(modmembernum), ...(conversationname))}
   ret -> {4(uid), 4(inno), 1016(4(cid), ...)}
-  msg -> {4(uid), 4(inno), 1016(4(uid_member) * ...)} * ...
+  msg -> {4(uid), 4(inno), 1016(4(cid),4(uid_member) * ...)} * ...
   ret -> {4(uid), 4(inno), 1016(4(status_code), ...)}
   ```
