@@ -4,9 +4,9 @@ server of an online chatting room based on udp
 
 ## environment
 
-- Ubuntu 22.04
-- g++ 11.3.0
-- libmysqlclient-dev 8.0.31
+- debian 10.2
+- mysql 5.7
+- libmysqlclient-dev 8.0
 
 ## compile & deploy
 - how to compile
@@ -14,7 +14,7 @@ server of an online chatting room based on udp
   cd src && make
   ```
 - how to deploy<br>
-  the usage should be `fisherman <localhost> <max requests concurrently>`, the `localhost` must be the ip address of the server in it's local network, so that the service can be accessed from other virtual machines of actual clients. For example, if you plan on starting the server on wsl2 and open a client on windows, the `localhost` must be the ip address of wsl2 rather than `127.0.0.1` or `localhost`, the client in windows should also access the service through the actual ip.
+  the project now uses `nlohmann json` as conf reader, to run the server, simply `./fisherman`, but the file `conf.json` should be completed first, the `"mysql_password"` is compulsory for now, only a machine that is ready for mysql root user can execute the binary successfully. the `"localip"` should be the ip address of the server in it's local domain, in ubuntu, the ip can be obtained by `ifconfig`, for example, if you need to access the server deployed in wsl2 from windows, the `localip` should be the exact ip of wsl2 rather than `127.0.0.1` or `localhost`.
 
 ## dependencies
 
