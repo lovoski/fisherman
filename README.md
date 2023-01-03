@@ -8,11 +8,13 @@ server of an online chatting room based on udp
 - g++ 11.3.0
 - libmysqlclient-dev 8.0.31
 
-## compile
-
-```bash
-cd src && make
-```
+## compile & deploy
+- how to compile
+  ```bash
+  cd src && make
+  ```
+- how to deploy<br>
+  the usage should be `fisherman <localhost> <max requests concurrently>`, the `localhost` must be the ip address of the server in it's local network, so that the service can be accessed from other virtual machines of actual clients. For example, if you plan on starting the server on wsl2 and open a client on windows, the `localhost` must be the ip address of wsl2 rather than `127.0.0.1` or `localhost`, the client in windows should also access the service through the actual ip.
 
 ## dependencies
 
