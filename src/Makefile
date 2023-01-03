@@ -1,9 +1,9 @@
 cc=g++
 flags=-Wall -g -I.
-std=-std=c++17
+std=-std=c++14
 exe=fisherman
 libs=-lmysqlclient
-obj=main.o fisherman.o threadpool.o sql.o socket.o
+obj=main.o threadpool.o sql.o socket.o fisherman.o
 
 target : $(obj)
 	$(cc) $(flags) $(std) -o $(exe) $(obj) $(libs)
@@ -11,8 +11,8 @@ target : $(obj)
 main.o : main.cpp
 sql.o : sql.cpp
 threadpool.o : threadpool.cpp
-fisherman.o : fisherman.cpp
 socket.o : socket.cpp
+fisherman.o : fisherman.cpp
 
 clean :
 	rm -rf *.o $(exe)

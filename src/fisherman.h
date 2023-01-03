@@ -5,56 +5,12 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <unistd.h>
+#include <sys/time.h>
 #include "sql.h"
-#include "socket.h"
-#include "threadpool.h"
 
 class fisherman;
-// 1024 bytes
-const int message_max_len = 1024;
-struct message {
-  char uid[4];
-  // interface_func number
-  char inno[4];
-  char content[message_max_len-8];
-};
-struct user {
-  int uid;
-  char *username;
-  char *password;
-  // true when login approved
-  // set to false when quit
-  bool approved_online;
-  // 0 -> root
-  // 1 -> admin
-  // 2 -> visitor
-  int privillege;
-  // conversation list of each user
-  std::vector<int> conv_list;
-  sockaddr_in client_addr;
-};
-struct file {
-  int fid;
-  char *filename;
-  // file shouldn't be store 
-  // in database directly
-  char *filepath;
-  long long filesize;
-};
-struct conversation {
-  int cid;
-  std::vector<int> members;
-  std::vector<int> files;
-  const char *historypath;
-  pthread_mutex_t mtx;
-  std::fstream history;
-  conversation() {
-    pthread_mutex_init(&mtx, NULL);
-  }
-  ~conversation() {
-    pthread_mutex_destroy(&mtx);
-  }
-};
+
 struct _args {
   message msg;
   fisherman *server;
@@ -98,30 +54,21 @@ void *modify_conversation(void *args);
 */
 void *client_listening(void *args);
 
-template<typename T>
-class tarray {
-public:
-  tarray(const int size = 50);
-  ~tarray();
-  void resize(const int nsize);
-  void insert(const T &ele);
-  T &operator[](const int index);
-private:
-  int m_size, m_limit, m_cur_index;
-  T *m_data;
-};
-
 class fisherman {
 public:
   fisherman(
-    const char *host = "127.0.0.1", 
-    const int port = 9958, 
-    const int max_requests = 200);
+    const char *host, 
+    const int port, 
+    const int max_requests,
+    const char *sqlhost,
+    const char *sqluser,
+    const char *sqlpassword);
   ~fisherman();
   void start(const int max_listeners = 10);
 
   int server_sockfd;
   UDPSocket *udpserver;
+  sql *db;
   bool keep_serving = true;
   tarray<user> user_map;
   tarray<file> file_map;

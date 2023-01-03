@@ -1,0 +1,8 @@
+{
+  "mysql_host": "127.0.0.1",
+  "mysql_username": "root",
+  "mysql_password": "",
+  "localip": "",
+  "port": 9958,
+  "concurrency": 200
+}
