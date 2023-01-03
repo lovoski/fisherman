@@ -1,19 +1,12 @@
 #ifndef FISHERMAN_H
 #define FISHERMAN_H
 
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <sys/types.h> 
-#include <unistd.h>
-#include <cstring>
-#include <cstdio>
-#include <cstdlib>
 #include <map>
 #include <vector>
 #include <fstream>
 #include <string>
 #include "sql.h"
+#include "socket.h"
 #include "threadpool.h"
 
 class fisherman;
@@ -106,10 +99,10 @@ void *modify_conversation(void *args);
 void *client_listening(void *args);
 
 template<typename T>
-class array {
+class tarray {
 public:
-  array(const int size = 50);
-  ~array();
+  tarray(const int size = 50);
+  ~tarray();
   void resize(const int nsize);
   void insert(const T &ele);
   T &operator[](const int index);
@@ -128,10 +121,11 @@ public:
   void start(const int max_listeners = 10);
 
   int server_sockfd;
+  UDPSocket *udpserver;
   bool keep_serving = true;
-  array<user> user_map;
-  array<file> file_map;
-  array<conversation> conv_map;
+  tarray<user> user_map;
+  tarray<file> file_map;
+  tarray<conversation> conv_map;
   std::map<std::string, int> username_map;
   std::vector<interface_func> interface_map;
   threadpool *client_listeners;

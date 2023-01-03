@@ -1,24 +1,24 @@
 #include "fisherman.h"
 
 template<typename T>
-array<T>::array(const int size) {
+tarray<T>::tarray(const int size) {
   m_size = size;
   m_limit = 2 * size;
   m_cur_index = 0;
   m_data = (T *)malloc(m_limit * sizeof(T));
 }
 template<typename T>
-array<T>::~array() {
+tarray<T>::~tarray() {
   delete[] m_data;
 }
 template<typename T>
-void array<T>::resize(const int nsize) {
+void tarray<T>::resize(const int nsize) {
   if (nsize < m_limit) return;
   m_limit = nsize;
   m_data = (T *)realloc(m_data, nsize * sizeof(T));
 }
 template<typename T>
-void array<T>::insert(const T &ele) {
+void tarray<T>::insert(const T &ele) {
   if (m_cur_index >= m_limit) {
     m_limit *= 2;
     m_data = (T *)realloc(m_data, m_limit * sizeof(T));
@@ -28,7 +28,7 @@ void array<T>::insert(const T &ele) {
   m_size++;
 }
 template<typename T>
-T &array<T>::operator[](const int index) {
+T &tarray<T>::operator[](const int index) {
   return m_data[index];
 }
 void int32_to_argv(__int32_t num, char *ret) {
@@ -87,24 +87,12 @@ fisherman::fisherman(
   const int max_requests
   ) {
   requests_handler = new threadpool(max_requests);
-
-  struct sockaddr_in serveraddr;
-  socklen_t addrlen = sizeof(serveraddr);
-  if ((server_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    printf("[error] error creating serverfd\n");
-    exit(1);
-  }
-  serveraddr.sin_family = AF_INET;
-  serveraddr.sin_addr.s_addr = inet_addr(host);
-  serveraddr.sin_port = htons(port);
-  if (bind(server_sockfd, (struct sockaddr *)&serveraddr, addrlen) == -1) {
-    printf("[error] error binding socket\n");
-    exit(1);
-  }
+  udpserver = new UDPSocket(host, port);
 }
 fisherman::~fisherman() {
   delete client_listeners;
   delete requests_handler;
+  delete udpserver;
 }
 void fisherman::start(const int max_listeners) {
   client_listeners = new threadpool(max_listeners);
@@ -154,10 +142,7 @@ void *client_listening(void *args) {
     message msg;
     memset(&msg, 0, message_max_len);
     printf("[wait for msg]\n");
-    if (recvfrom(param->server_sockfd, &msg, message_max_len, 0, 
-    (struct sockaddr *)&client_addr, &addrlen) == -1) {
-      printf("[error] recvfrom error\n");
-    }
+    param->udpserver->recvFrom(&msg, message_max_len, client_addr);
     _args inargs = {msg, param, client_addr};
     printf("[receive request] interface number:%d\n", argv_to_int32(msg.inno, 4));
     //printf("[receive request] user number:%d\n", argv_to_int32(msg.uid, 4));
@@ -173,12 +158,7 @@ void *test_connect(void *args) {//0000
   memcpy(tmp_msg.uid, tc->msg.uid, sizeof(tc->msg.uid));
   memcpy(tmp_msg.inno, tc->msg.inno, sizeof(tc->msg.inno));
   memcpy(tmp_msg.content, reply, strlen(reply));
-  if (sendto(tc->server->server_sockfd, &tmp_msg, message_max_len, 0, 
-  (struct sockaddr *)&tc->client_addr, sizeof(sockaddr_in)) == -1) {
-    printf("[error] sendto error\n");
-  }else{
-    printf("successful\n");
-  }
+  tc->server->udpserver->sendTo(&tmp_msg, message_max_len, tc->client_addr);
   return NULL;
 }
 
@@ -217,10 +197,7 @@ void *login(void *args) {//0001
     status_code = 2;
   }
   tmp_msg.content[3] = status_code;
-  if (sendto(ls->server->server_sockfd, &tmp_msg, message_max_len, 0, 
-  (struct sockaddr *)&ls->client_addr, sizeof(sockaddr_in)) == -1) {
-    printf("[error] sendto error\n");
-  }
+  ls->server->udpserver->sendTo(&tmp_msg, message_max_len, ls->client_addr);
   return NULL;
 }
 
@@ -244,15 +221,9 @@ void *broadcast(void *args) {//0003
       memcpy(tmp_msg.uid, bc->msg.uid, sizeof(bc->msg.uid));
       memcpy(tmp_msg.inno, bc->msg.inno, sizeof(bc->msg.inno));
       memcpy(tmp_msg.content, reply, strlen(reply));
-      if (sendto(bc->server->server_sockfd, &tmp_msg, message_max_len, 0, 
-      (struct sockaddr *)&bc->server->user_map[i].client_addr, sizeof(sockaddr_in)) == -1) {
-        printf("[error] sendto error\n");
-      }
+      bc->server->udpserver->sendTo(&tmp_msg, message_max_len, bc->server->user_map[i].client_addr);
     } else {
-      if (sendto(bc->server->server_sockfd, &bc->msg, message_max_len, 0, 
-      (struct sockaddr *)&bc->server->user_map[i].client_addr, sizeof(sockaddr_in)) == -1) {
-        printf("[error] sendto error\n");
-      }
+      bc->server->udpserver->sendTo(&bc->msg, message_max_len, bc->server->user_map[i].client_addr);
     }
   }
   pthread_mutex_unlock(&conv->mtx);
