@@ -63,8 +63,7 @@ server of an online chatting room based on udp
   ```
 - broadcast
   ```
-  msg -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), ...(message))}
-  ret -> {4(uid), 4(inno), 1016(4(cid), 4(timestamp), ...("message sent"))}
+  msg -> {4(uid), 4(inno), 1016(4(cid), ...(message))}
   ```
 - file_upload
   ```

@@ -54,7 +54,7 @@ struct conversation {
 
 inline int mstrlen(const char *s);
 bool mstrcmp(const char *s1, const char *s2);
-static void debug_mem(char *mem, int len, const char * info);
+void debug_mem(const char *mem, int len, const char * info);
 
 template<typename T>
 class tarray {

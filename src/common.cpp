@@ -13,7 +13,7 @@ bool mstrcmp(const char *s1, const char *s2) {
   }
   return true;
 }
-static void debug_mem(char *mem, int len, const char * info) {
+void debug_mem(const char *mem, int len, const char * info) {
   printf("%s", info);
   for (int i = 0; i < len; ++i)
     printf("%d,", mem[i]);

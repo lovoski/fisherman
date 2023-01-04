@@ -116,7 +116,12 @@ void *login(void *args) {//0001
   int status_code;
   const char *reply = "server online";
   memcpy(tmp_msg.inno, ls->msg.inno, sizeof(ls->msg.inno));
-  if (sv->username_map.find(std::string(ls->msg.content+200)) != sv->username_map.end()) {
+  if (mstrlen(ls->msg.content+200) == 1) {
+    status_code = 3;
+    printf("[reject user register] username too short\n");
+    goto __reply;
+  }
+  if (sv->username_map.find(std::string((ls->msg.content+200))) != sv->username_map.end()) {
     int uid = sv->username_map[ls->msg.content+200];
     if (uid == 0) // reject sys user to login
       goto __reject;
@@ -143,6 +148,8 @@ void *login(void *args) {//0001
     // create account for user
     // assign new uid
     int n_uid = ls->server->user_map.size();
+    // return the uid of newly registered user
+    int32_to_argv(n_uid, tmp_msg.uid);
     user n_user;
     n_user.approved_online = true;
     n_user.client_addr = ls->client_addr;
@@ -154,7 +161,7 @@ void *login(void *args) {//0001
 
     // append user to global
     ls->server->username_map.insert({std::string(ls->msg.content+200), n_uid});
-    ls->server->user_map.insert(n_user);
+    ls->server->user_map.insert(n_user.uid, n_user);
     ls->server->db->append_new_user(n_user);
 
     // add to default lobby
@@ -165,6 +172,7 @@ void *login(void *args) {//0001
     printf("[register new user] username:%s\n", (ls->msg.content+200));
     status_code = 2;
   }
+  __reply:
   int32_to_argv(status_code, tmp_msg.content);
   // return username to user
   memcpy(tmp_msg.content+4, ls->msg.content+200, mstrlen((ls->msg.content+200)));
@@ -185,8 +193,10 @@ void *broadcast(void *args) {//0003
   int sender_uid = argv_to_int32(bc->msg.uid, 4);
   int cid = argv_to_int32(bc->msg.content, 4); // find destinated conversation
   auto members = bc->server->conv_map[cid].members;
+  printf("[message to be broadcasted] %s\n", bc->msg.content+208);
   pthread_mutex_lock(bc->server->conv_map[cid].mtx);
   for (auto i : bc->server->conv_map[cid].members) {
+    printf("sender_uid=%d, current uid=%d, user_map[i].uid=%d\n", sender_uid, i, bc->server->user_map[i].uid);
     if (i != sender_uid && bc->server->user_map[i].approved_online) { // don't reply to the sender
       bc->server->udpserver->sendTo(&bc->msg, message_max_len, bc->server->user_map[i].client_addr);
     }
