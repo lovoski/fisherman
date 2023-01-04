@@ -84,9 +84,10 @@ void sql::load_all_users(tarray<user> &user_map, std::map<std::string, int> &use
   int fields = mysql_num_fields(result);
   while ((row = mysql_fetch_row(result))) {
     user nu;
+    memset(&nu, 0, sizeof(user));
     nu.uid = atoi(row[0]);
-    memcpy(nu.username, row[1], strlen(row[1]));
-    memcpy(nu.password, row[2], strlen(row[2]));
+    memcpy(nu.username, row[1], mstrlen(row[1]));
+    memcpy(nu.password, row[2], mstrlen(row[2]));
     mstrsplit_to_int32(row[3], nu.conv_list);
     nu.privillege = atoi(row[4]);
     nu.approved_online = false;
@@ -104,6 +105,8 @@ void sql::load_all_conversation(tarray<conversation> &conv_map) {
   int fields = mysql_num_fields(result);
   while ((row = mysql_fetch_row(result))) {
     conversation nc;
+    memset(nc.convname, 0, sizeof(nc.convname));
+    memset(nc.historypath, 0, sizeof(nc.historypath));
     nc.cid = atoi(row[0]);
     memcpy(nc.convname, row[1], strlen(row[1]));
     mstrsplit_to_int32(row[2], nc.members);

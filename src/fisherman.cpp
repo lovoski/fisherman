@@ -30,25 +30,6 @@ __int64_t argv_to_int64(char *argv, int len) {
   }
   return ret;
 }
-inline int mstrlen(const char *s) {
-  int ret = 0;
-  while (s[ret] != 0) ret++;
-  return ret;
-}
-bool mstrcmp(const char *s1, const char *s2) {
-  int l1 = mstrlen(s1), l2 = mstrlen(s2);
-  if (l1 != l2) return false;
-  for (int i = 0; i < l1; ++i) {
-    if (s1[i] != s2[i]) return false;
-  }
-  return true;
-}
-static void debug_mem(char *mem, int len, const char * info) {
-  printf("%s", info);
-  for (int i = 0; i < len; ++i)
-    printf("%d,", mem[i]);
-  printf("\n");
-}
 
 fisherman::fisherman(
   const char *host,
@@ -128,30 +109,12 @@ void *test_connect(void *args) {//0000
   return NULL;
 }
 
-void sys_broadcast(_args *args, const char *msg) {
-  message sys_notify_others;
-  memset(&sys_notify_others, 0, message_max_len);
-  int32_to_argv(3, sys_notify_others.inno); // broadcast interface
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  // add timestamp
-  memcpy(sys_notify_others.content+4, &tv.tv_sec, 4);
-  // cp the message
-  memcpy(sys_notify_others.content+8, msg, mstrlen(msg));
-  _args inargs = {sys_notify_others, args->server};
-  // append task to threadpool
-  args->server->requests_handler->append_task({args->server->interface_map[3], &inargs});
-}
-
 void *login(void *args) {//0001
   _args *ls = (_args *)args;
   message tmp_msg;
   fisherman *sv = ls->server;
   int status_code;
   const char *reply = "server online";
-  for (auto i : ls->server->username_map) {
-    printf("username_map:%s --- %d\n", i.first.c_str(), i.second);
-  }
   memcpy(tmp_msg.inno, ls->msg.inno, sizeof(ls->msg.inno));
   if (sv->username_map.find(std::string(ls->msg.content+200)) != sv->username_map.end()) {
     int uid = sv->username_map[ls->msg.content+200];
@@ -168,15 +131,11 @@ void *login(void *args) {//0001
       sv->user_map[uid].approved_online = true;
       sv->user_map[uid].client_addr = ls->client_addr;
       printf("[user login] username:%s\n", (ls->msg.content+200));
-      // notify other users, only broadcast in default lobby
-      char msgcontent[400] = {0};
-      sprintf(msgcontent, "[%s] is now online", (ls->msg.content+200));
-      // sys_broadcast(ls, msgcontent);
       status_code == 0;
     } else {
       __reject:
       // reject login
-      sv->user_map[uid].approved_online = false;
+      // sv->user_map[uid].approved_online = false;
       printf("[rejcect user login] username:%s\n", (ls->msg.content+200));
       status_code = 1;
     }
@@ -203,14 +162,12 @@ void *login(void *args) {//0001
     ls->server->conv_map[0].members.push_back(n_uid);
     pthread_mutex_unlock(ls->server->conv_map[0].mtx);
 
-    // notify other users, only broadcast in default lobby
-    char msgcontent[400] = {0};
-    sprintf(msgcontent, "[%s] is registered and online", (ls->msg.content+200));
-    // sys_broadcast(ls, msgcontent);
     printf("[register new user] username:%s\n", (ls->msg.content+200));
     status_code = 2;
   }
   int32_to_argv(status_code, tmp_msg.content);
+  // return username to user
+  memcpy(tmp_msg.content+4, ls->msg.content+200, mstrlen((ls->msg.content+200)));
   ls->server->udpserver->sendTo(&tmp_msg, message_max_len, ls->client_addr);
   return NULL;
 }
@@ -219,7 +176,7 @@ void *quit(void *args) {
   _args *q = (_args *)args;
   int uid = argv_to_int32(q->msg.uid, 4);
   q->server->user_map[uid].approved_online = false;
-  printf("[user quit] username:%s\n", (q->msg.content+200));
+  printf("[user quit] username:%s\n", (q->msg.content));
   return NULL;
 }
 
@@ -227,16 +184,14 @@ void *broadcast(void *args) {//0003
   _args *bc = (_args *)args;
   int sender_uid = argv_to_int32(bc->msg.uid, 4);
   int cid = argv_to_int32(bc->msg.content, 4); // find destinated conversation
-  conversation *conv = &bc->server->conv_map[cid];
-
-  pthread_mutex_lock(conv->mtx);
-  for (auto i : conv->members) {
-    if (i != sender_uid) { // don't reply to the sender
+  auto members = bc->server->conv_map[cid].members;
+  pthread_mutex_lock(bc->server->conv_map[cid].mtx);
+  for (auto i : bc->server->conv_map[cid].members) {
+    if (i != sender_uid && bc->server->user_map[i].approved_online) { // don't reply to the sender
       bc->server->udpserver->sendTo(&bc->msg, message_max_len, bc->server->user_map[i].client_addr);
     }
   }
-  pthread_mutex_unlock(conv->mtx);
-
+  pthread_mutex_unlock(bc->server->conv_map[cid].mtx);
   return NULL;
 }
 

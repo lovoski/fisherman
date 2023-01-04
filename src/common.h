@@ -52,64 +52,48 @@ struct conversation {
   }
 };
 
+inline int mstrlen(const char *s);
+bool mstrcmp(const char *s1, const char *s2);
+static void debug_mem(char *mem, int len, const char * info);
+
 template<typename T>
 class tarray {
 public:
-  tarray(const int size = 50);
-  ~tarray();
-  int size();
-  void resize(const int nsize);
-  void insert(const T &ele);
-  void insert(const int index, const T &ele);
-  T &operator[](const int index);
+  tarray(const int size = 50) {
+    m_size = size;
+    m_limit = 2 * size;
+    m_cur_index = 0;
+    m_data = (T *)malloc(m_limit * sizeof(T));
+  }
+  ~tarray() {delete[] m_data;}
+  int size() {return m_cur_index+1;}
+  void resize(const int nsize) {
+    if (nsize < m_limit) return;
+    m_limit = nsize;
+    m_data = (T *)realloc(m_data, nsize * sizeof(T));
+  }
+  void insert(const T &ele) {
+    if (m_cur_index >= m_limit) {
+      m_limit *= 2;
+      m_data = (T *)realloc(m_data, m_limit * sizeof(T));
+    }
+    m_data[m_cur_index] = ele;
+    m_cur_index++;
+    m_size++;
+  }
+  void insert(const int index, const T &ele) {
+    if (index >= m_limit) {
+      m_limit = 2 * (index+1);
+      m_data = (T *)realloc(m_data, m_limit * sizeof(T));
+    }
+    m_data[index] = ele;
+    m_cur_index = index;
+    m_size++;
+  }
+  T &operator[](const int index) {return m_data[index];}
 private:
   int m_size, m_limit, m_cur_index;
   T *m_data;
 };
-
-template<typename T>
-tarray<T>::tarray(const int size) {
-  m_size = size;
-  m_limit = 2 * size;
-  m_cur_index = 0;
-  m_data = (T *)malloc(m_limit * sizeof(T));
-}
-template<typename T>
-tarray<T>::~tarray() {
-  delete[] m_data;
-}
-template<typename T>
-void tarray<T>::resize(const int nsize) {
-  if (nsize < m_limit) return;
-  m_limit = nsize;
-  m_data = (T *)realloc(m_data, nsize * sizeof(T));
-}
-template<typename T>
-void tarray<T>::insert(const T &ele) {
-  if (m_cur_index >= m_limit) {
-    m_limit *= 2;
-    m_data = (T *)realloc(m_data, m_limit * sizeof(T));
-  }
-  m_data[m_cur_index] = ele;
-  m_cur_index++;
-  m_size++;
-}
-template<typename T>
-void tarray<T>::insert(const int index, const T &ele) {
-  if (index >= m_limit) {
-    m_limit = 2 * (index+1);
-    m_data = (T *)realloc(m_data, m_limit * sizeof(T));
-  }
-  memcpy(&m_data[index], &ele, sizeof(T));
-  m_cur_index = index;
-  m_size++;
-}
-template<typename T>
-T &tarray<T>::operator[](const int index) {
-  return m_data[index];
-}
-template<typename T>
-int tarray<T>::size() {return m_cur_index+1;}
-
 
 #endif

@@ -2,6 +2,10 @@
 
 server of an online chatting room based on udp
 
+## client repo
+
+- https://github.com/lovoski/anemonefish
+
 ## environment
 
 - debian 10.2
@@ -25,6 +29,24 @@ server of an online chatting room based on udp
 
 ## interfaces (developing)
 
+### interface map
+
+| interface name | interface number (inno) | usage |
+| :------------: | :---------------------: | :-----: |
+|test_connect|0|test if the client is still online|
+|login|1|log in and sign up, create user if username is not found, check password and online status if username is found. all new users will be invited into a default conversation named "default lobby"|
+|quit|2|let server knows the client is offline|
+|broadcast|3|broadcast client's message to specified conversation|
+|file_upload|4|  |
+|file_list|5|  |
+|delete_file|6|  |
+|file_download|7|  |
+|conversation_list|8|  |
+|create_conversation|9|  |
+|modify_conversation|10|  |
+
+### detail of interfaces
+
 - test_connect
   ```
   msg -> {4(uid), 4(inno), 1016(...)}
@@ -33,11 +55,11 @@ server of an online chatting room based on udp
 - login
   ```
   msg -> {4(uid), 4(inno), 1016(200(username), ...(password))}
-  ret -> {4(uid), 4(inno), 1016(4(status_code), ...)}
+  ret -> {4(uid), 4(inno), 1016(4(status_code), ...(username))}
   ```
 - quit
   ```
-  msg -> {4(uid), 4(inno), 1016(...)}
+  msg -> {4(uid), 4(inno), 1016(...(username))}
   ```
 - broadcast
   ```

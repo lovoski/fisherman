@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <iostream>
 #include <unistd.h>
 #include <sys/time.h>
 #include "sql.h"

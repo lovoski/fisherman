@@ -3,12 +3,13 @@ flags=-Wall -g -I.
 std=-std=c++14
 exe=fisherman
 libs=-lmysqlclient
-obj=main.o threadpool.o sql.o socket.o fisherman.o
+objs=main.o common.o threadpool.o sql.o socket.o fisherman.o
 
-target : $(obj)
-	$(cc) $(flags) $(std) -o $(exe) $(obj) $(libs)
+target : $(objs)
+	$(cc) $(flags) $(std) -o $(exe) $(objs) $(libs)
 
 main.o : main.cpp
+common.o : common.cpp
 sql.o : sql.cpp
 threadpool.o : threadpool.cpp
 socket.o : socket.cpp
