@@ -36,8 +36,8 @@ sql::sql(
   }
   if (mysql_query(conn, "CREATE DATABASE IF NOT EXISTS fisherman")) error_close(conn);
   if (mysql_query(conn, "use fisherman")) error_close(conn);
-  if (mysql_query(conn, "CREATE TABLE IF NOT EXISTS users(uid INT NOT NULL PRIMARY KEY, username TEXT, password TEXT, conv_list TEXT, privillege INT)")) error_close(conn);
-  if (mysql_query(conn, "CREATE TABLE IF NOT EXISTS convs(cid INT NOT NULL PRIMARY KEY, convname TEXT, members TEXT, files TEXT, historypath TEXT, capacity INT)")) error_close(conn);
+  if (mysql_query(conn, "CREATE TABLE IF NOT EXISTS users(uid INT(8) NOT NULL PRIMARY KEY, username TEXT, password TEXT, conv_list TEXT, privillege INT)")) error_close(conn);
+  if (mysql_query(conn, "CREATE TABLE IF NOT EXISTS convs(cid INT(8) NOT NULL PRIMARY KEY, convname TEXT, members TEXT, files TEXT, historypath TEXT, capacity INT)")) error_close(conn);
   if (mysql_query(conn, "SELECT * FROM users")) error_close(conn);
   MYSQL_RES *result = mysql_store_result(conn);
   MYSQL_ROW row;

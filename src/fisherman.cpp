@@ -151,6 +151,8 @@ void *login(void *args) {//0001
     // return the uid of newly registered user
     int32_to_argv(n_uid, tmp_msg.uid);
     user n_user;
+    // remeber to memset before any operation
+    memset(&n_user, 0, sizeof(user));
     n_user.approved_online = true;
     n_user.client_addr = ls->client_addr;
     memcpy(n_user.password, ls->msg.content, mstrlen(ls->msg.content));
