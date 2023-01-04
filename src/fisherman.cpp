@@ -136,7 +136,7 @@ void *login(void *args) {//0001
       sv->user_map[uid].approved_online = true;
       sv->user_map[uid].client_addr = ls->client_addr;
       printf("[user login] username:%s\n", (ls->msg.content+200));
-      status_code == 0;
+      status_code = 0;
     } else {
       __reject:
       // reject login

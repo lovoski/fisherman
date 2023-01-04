@@ -2,7 +2,7 @@ cc=g++
 flags=-Wall -g -I.
 std=-std=c++14
 exe=fisherman
-libs=-lmysqlclient
+libs=-lmysqlclient -lpthread
 objs=main.o common.o threadpool.o sql.o socket.o fisherman.o
 
 target : $(objs)
